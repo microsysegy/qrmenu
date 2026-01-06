@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فاتورتك - عباد الرحمن</title>
+<style>
+body { font-family:Tahoma, sans-serif; background:#f5f5f5; color:#222; margin:0; padding:20px; }
+h2 { text-align:center; margin-bottom:20px; }
+.cart-item { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background:#fff; padding:10px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.1); }
+.cart-item img { width:80px; height:80px; object-fit:cover; border-radius:8px; margin-left:10px; }
+.cart-item div { flex:1; }
+button { font-size:14px; font-weight:bold; padding:5px 10px; border:none; border-radius:6px; cursor:pointer; background:#d62828; color:#fff; margin:2px; }
+button:hover { background:#ff6f3c; }
+#total { font-weight:bold; margin-top:15px; text-align:right; font-size:16px; }
+.empty-msg { text-align:center; margin-top:50px; font-size:16px; color:#555; }
+</style>
+</head>
+<body>
+
+<h2>فاتورتك</h2>
+<div id="cartContainer"></div>
+<div id="total"></div>
+<div style="text-align:center; margin-top:20px;">
+    <button onclick="clearCart()">مسح الفاتورة</button>
+    <button onclick="sendToWhatsApp()">إرسال إلى WhatsApp</button>
+    <button onclick="window.location.href='index.html'">العودة للمنيو</button>
+</div>
+
+<script>
+let CART = JSON.parse(localStorage.getItem("CART") || "{}");
+let CACHE = JSON.parse(localStorage.getItem("OFFLINE_MENU") || "{}"); 
+
+function saveCart(){
+    localStorage.setItem("CART", JSON.stringify(CART));
+}
+
+function renderCart(){
+    const container = document.getElementById("cartContainer");
+    container.innerHTML = "";
+
+    if(Object.keys(CART).length === 0){
+        container.innerHTML = '<div class="empty-msg">السلة فارغة</div>';
+        document.getElementById("total").textContent = "";
+        return;
+    }
+
+    let total = 0;
+
+    Object.values(CART).forEach((c, index)=>{
+        let itemData = null;
+        for(let catId in CACHE.items){
+            const found = CACHE.items[catId].find(i=>i.id==c.itemId);
+            if(found){ itemData = found; break; }
+        }
+        const imgSrc = itemData?.itemImg?.length>50 ? `data:image/jpeg;base64,${itemData.itemImg}` : "noimage.png";
+
+        const itemTotal = c.qty * c.price;
+        total += itemTotal;
+        // إنشاء العنصر ديناميكي
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        div.innerHTML = `
+            <img src="${imgSrc}" />
+            <div>
+                <strong>${c.itemName} - ${c.unitName}</strong>
+                <div>
+                    <span id="qty-${index}">${c.qty}</span>
+                </div>
+                <div>${itemTotal} جنيه</div>
+            </div>
+        `;
+console.log('b'+c.qty);
+        // أزرار التحكم
+        const controls = document.createElement("div");
+        const btnMinus = document.createElement("button");
+        btnMinus.textContent = "-";
+        btnMinus.addEventListener("click", ()=> updateQty(c.itemId, c.unitName, -1));
+
+        const btnPlus = document.createElement("button");
+        btnPlus.textContent = "+";
+        btnPlus.addEventListener("click", ()=> updateQty(c.itemId, c.unitName, 1));
+
+        const btnRemove = document.createElement("button");
+        btnRemove.textContent = "حذف";
+        btnRemove.addEventListener("click", ()=> removeItem(c.itemId, c.unitName));
+
+        controls.appendChild(btnMinus);
+        controls.appendChild(btnPlus);
+        controls.appendChild(btnRemove);
+
+        div.querySelector("div").appendChild(controls);
+
+        container.appendChild(div);
+    });
+
+    document.getElementById("total").textContent = "الإجمالي: " + total + " جنيه";
+}
+
+function updateQty(itemId, unitName, delta){
+    const key = `${itemId}-${unitName}`;
+    if(!CART[key]) return;
+    CART[key].qty += delta;
+    if(CART[key].qty <= 0) delete CART[key];
+    saveCart();
+    renderCart();
+}
+
+function removeItem(itemId, unitName){
+    const key = `${itemId}-${unitName}`;
+    delete CART[key];
+    saveCart();
+    renderCart();
+}
+
+function clearCart(){
+    CART = {};
+    saveCart();
+    renderCart();
+}
+
+function sendToWhatsApp(){
+    if(Object.keys(CART).length===0){
+        alert("السلة فارغة");
+        return;
+    }
+
+    let msg = "🧾 طلب جديد:\n\n";
+    let total = 0;
+
+    Object.values(CART).forEach(c=>{
+        const itemData = (()=>{for(let catId in CACHE.items){ const f = CACHE.items[catId].find(i=>i.id==c.itemId); if(f) return f; } return null;})();
+        const lineTotal = c.qty * c.price;
+        total += lineTotal;
+        const imgLink = itemData?.itemImg?.length>50 ? "[صورة مرفقة]" : "";
+        msg += `• ${c.itemName}\n  - ${c.unitName} × ${c.qty} = ${lineTotal} جنيه ${imgLink}\n\n`;
+    });
+
+    msg += `🔻 الإجمالي: ${total} جنيه`;
+    const phone = "+201001741790"; 
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+}
+
+// عرض الفاتورة عند تحميل الصفحة
+renderCart();
+</script>
+
+</body>
+</html>
