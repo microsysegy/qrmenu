@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تفاصيل</title>
 <style>
+  /* منع أي تظليل أو فلاش عند اللمس */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* منع focus و active من الكارد */
+.item,
+.item:focus,
+.item:active {
+  outline: none;
+  box-shadow: none !important;
+}
+
+/* لو الكارد div قابل للضغط */
+.item {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 body {padding-top:55px;  padding-bottom:90px; margin:0; font-family:Tahoma; background:#f5f5f5 }
 .top-bar button {
   background:none;
