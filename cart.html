@@ -38,6 +38,7 @@ button:hover { background:#ff6f3c; }
 /* الشريط السفلي */
 .bottom-bar {
   position:fixed;
+  flex-direction: column;
   bottom:0;
   left:0;
   justify-content:space-around;
@@ -52,7 +53,7 @@ button:hover { background:#ff6f3c; }
 }
 
 .bottom-bar button {
-  background:#d62828;
+  background:#0de254;
   color:#fff;
   border:none;
   border-radius:8px;
@@ -60,6 +61,7 @@ button:hover { background:#ff6f3c; }
   font-size:16px;
   font-weight:bold;
   cursor:pointer;
+  width: 90%;
 }
 
 .qty {
@@ -67,25 +69,23 @@ button:hover { background:#ff6f3c; }
   font-weight:bold;
   min-width:30px;
   text-align:center;
-  
-}
+  }
 </style>
 <div class="top-bar" style="align-items: center; justify-content: space-between;" >
 <h2 style="font-size: 14px; padding-right: 10px;">سلة المشتريات</h2>
     <button onclick="goBack()"> ← </button>
-  
-</div>
+  </div>
 
 </head>
 <body>
 <div style="height: 50px;"></div>
 <div id="cartContainer"></div>
-<div class="cart-item" id="total"></div>
 
 <div class="bottom-bar">
-    <button onclick="clearCart()">مسح الفاتورة</button>
+    <div  id="total"></div>
     <button onclick="sendToWhatsApp()">إرسال إلى WhatsApp</button>
    <!-- <button onclick="window.location.href='index.html'">العودة للمنيو</button>-->
+
 </div>
 
 <script>
