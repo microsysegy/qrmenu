@@ -8,7 +8,6 @@
 
 body {padding-top:55px;  padding-bottom:90px; margin:0; font-family:Tahoma; background:#f5f5f5 }
 .top-bar button {
-
   background:none;
   border:none;
   color:#630404;
@@ -96,7 +95,7 @@ text-align: center;
   shape-outside: 10px;
   padding:10px;
   display:flex;
-  justify-content:space-between;
+  justify-content:space-around;
   align-items:center;
   gap:10px;
 }
@@ -108,7 +107,8 @@ text-align: center;
   border-radius:8px;
   padding:10px 16px;
   font-size:16px;
-  font-weight:bold;
+  font-weight:bold;  margin-right: 15px;
+
   cursor:pointer;
 }
 
@@ -117,19 +117,18 @@ text-align: center;
   font-weight:bold;
   min-width:30px;
   text-align:center;
-  
+  padding-right: 15px;
 }
 </style>
-<div class="top-bar">
+<div class="top-bar" style="align-items: center; justify-content: space-between;" >
+<h2 style="font-size: 14px; padding-right: 10px;">تفاصيل الصنف</h2>
+    <button onclick="goBack()"> ← </button>
   
-  <button onclick="goBack()"> ← </button>
-  <div class="cart-icon" onclick="goToCart()">
-  </div>
 </div>
 </head>
 <body>
 
-  <img id="mainImg" class="header-img">
+<img id="mainImg" class="header-img">
 <div id="itemName" class="item-name"></div>
 <div id="itemdetails" class="item-details"></div>
 <div class="siz">الحجم <spam class="sizword">* اختيار واحد</spam></div>
@@ -138,9 +137,9 @@ text-align: center;
 
 <!-- شريط التحكم السفلي -->
 <div class="bottom-bar">
-  <button onclick="changeQty(-1)">➖</button>
+  <button onclick="changeQty(-1)">-</button> <!--➖➕-->
   <span id="qty" class="qty">0</span>
-  <button onclick="changeQty(1)">➕</button>
+  <button onclick="changeQty(1)">+</button>
 
   <button style="flex:1" onclick="sendToCart()">اضف الي السلة</button>
 </div>
@@ -268,6 +267,7 @@ function sendToCart1(){
 
   // رجوع مباشر لصفحة الفاتورة
   window.location.href = "index.html";
+
 }
 
 </script>
