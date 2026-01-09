@@ -5,7 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>تفاصيل</title>
 <style>
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
 
+.cart-animate {
+  animation: shake 0.4s;
+}
+
+.badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 12px;
+  height: 12px;
+  background: #00ff6a;
+  border-radius: 50%;
+  display: none;
+}
+#cartBtn {font-size: 14px;font-weight:bold; position:fixed; bottom:80px; left:20px; background:#d62828; color:white; border:none; border-radius:50px; width:60px; height:60px; font-size:24px; cursor:pointer; z-index:2000; }
 body {padding-top:55px;  padding-bottom:90px; margin:0; font-family:Tahoma; background:#f5f5f5 }
 .top-bar button {
   background:none;
@@ -113,7 +135,8 @@ body {padding-top:55px;  padding-bottom:90px; margin:0; font-family:Tahoma; back
   font-weight:bold;  margin-right: 15px;
   cursor:pointer;
 }
-
+button { font-size:14px; font-weight:bold; padding:5px 10px; border:none; border-radius:6px; cursor:pointer; background:#d62828; color:#fff; margin:2px; }
+button:hover { background:#ff6f3c; }
 .qty {
   font-size:18px;
   font-weight:bold;
@@ -129,11 +152,12 @@ body {padding-top:55px;  padding-bottom:90px; margin:0; font-family:Tahoma; back
 </div>
 </head>
 <body>
-
+<button id="cartBtn" onclick="goToCart()">🛒  <span id="cartBadge" class="badge"></span>
+</button>
 <img id="mainImg" class="header-img">
 <div id="itemName" class="item-name"></div>
 <div id="itemdetails" class="item-details"></div>
-<div class="siz">الحجم <spam class="sizword">* اختيار واحد</spam></div>
+<div id="siz" class="siz">الحجم <spam class="sizword">* اختيار واحد</spam></div>
 
 <div id="unitsBox" class="units"></div>
 
@@ -143,67 +167,122 @@ body {padding-top:55px;  padding-bottom:90px; margin:0; font-family:Tahoma; back
   <span id="qty" class="qty">0</span>
   <button onclick="changeQty(1)">+</button>
 
-  <button style="flex:1" onclick="sendToCart()">اضف الي السلة</button>
+  <button style="flex:1" onclick="sendToCart()">أضف الي السلة</button>
 </div>
 
 
 <script>
-  // استرجاع سلة المشتريات من LocalStorage
+// =======================
+// CART
+// =======================
 let CART = JSON.parse(localStorage.getItem("CART") || "{}");
 
-// دالة لحفظ التغييرات
 function saveCart() {
     localStorage.setItem("CART", JSON.stringify(CART));
 }
+
+// =======================
+// LOAD ITEM
+// =======================
 const raw = localStorage.getItem("selectedItem");
 if (!raw) location.href = "index.html";
 
 const data = JSON.parse(raw);
 
-// بيانات الصنف
+// =======================
+// ITEM INFO
+// =======================
 const imgSrc = data.item.itemImg?.length > 50
-  ? `data:image/jpeg;base64,${data.item.itemImg}`
-  : "noimage.png";
+    ? `data:image/jpeg;base64,${data.item.itemImg}`
+    : "noimage.png";
 
 document.getElementById("mainImg").src = imgSrc;
 document.getElementById("itemName").textContent = data.item.nameA;
-document.getElementById("itemdetails").textContent ='جوعان؟ '+ data.item.nameA + ' من افضل الاطعمه التي تنتظرك لتجربها';
+document.getElementById("itemdetails").textContent =
+    "جوعان؟ " + data.item.nameA + " من افضل الاطعمه التي تنتظرك لتجربها";
 
-// العربة
-//let CART = JSON.parse(localStorage.getItem("CART") || "{}");
-
-// الحالة الحالية
+// =======================
+// STATE
+// =======================
 let selectedUnit = null;
-let qty = 0;
+let qty = 1;
 
-// الوحدات
 const units = data.units || [];
-const box = document.getElementById("unitsBox");
-box.dataset.count = units.length;
+const unitsBox = document.getElementById("unitsBox");
+const siz = document.getElementById("siz");
+// =======================
+// UNITS LOGIC
+// =======================
 
-units.forEach(u => {
-  const div = document.createElement("div");
-  div.className = "unit";
-  div.innerHTML = `
-    <img src="${imgSrc}">
-    <div class="unit-name">${u.unitName}</div>
-    <div class="unit-price">${u.price} جنيه</div>
-  `;
+// 🟢 حالة وحدة واحدة فقط
+if (units.length === 1) {
+    selectedUnit = units[0];
+    qty = 1;
 
-  div.onclick = () => selectUnit(u, div);
-  box.appendChild(div);
-});
+    // إخفاء الوحدات
+    unitsBox.style.display = "none";
+    siz.style.display = "none";
 
-function selectUnit(unit, el){
-  document.querySelectorAll(".unit").forEach(u => u.classList.remove("selected"));
-  el.classList.add("selected");
+    // تحديث الكمية
+    document.getElementById("qty").textContent = qty;
+}
 
-  selectedUnit = unit;
+// 🟡 أكتر من وحدة
+else if (units.length > 1) {
+    renderUnits();
+    selectFirstUnit();
+}
 
-  const key = `${data.item.id}-${unit.unitName}`;
-  qty = CART[key]?.qty || 1;
+// =======================
+// RENDER UNITS
+// =======================
+function renderUnits() {
+    unitsBox.innerHTML = "";
+    unitsBox.dataset.count = units.length;
 
-  document.getElementById("qty").textContent = qty;
+    units.forEach(u => {
+        const div = document.createElement("div");
+        div.className = "unit";
+        div.innerHTML = `
+            <img src="${imgSrc}">
+            <div class="unit-name">${u.unitName}</div>
+            <div class="unit-price">${u.price} جنيه</div>
+        `;
+
+        div.onclick = () => selectUnit(u, div);
+        unitsBox.appendChild(div);
+    });
+}
+
+// =======================
+// SELECT UNIT
+// =======================
+function selectUnit(unit, el) {
+    document.querySelectorAll(".unit").forEach(u =>
+        u.classList.remove("selected")
+    );
+
+    el.classList.add("selected");
+    selectedUnit = unit;
+
+    const key = `${data.item.id}-${unit.unitName}`;
+    qty = CART[key]?.qty || 1;
+
+    document.getElementById("qty").textContent = qty;
+}
+
+// =======================
+// AUTO SELECT FIRST UNIT
+// =======================
+function selectFirstUnit() {
+    const first = document.querySelector(".unit");
+    if (!first) return;
+
+    first.classList.add("selected");
+    selectedUnit = units[0];
+    qty = 1;
+
+    document.getElementById("qty").textContent = qty;
 }
 
 function changeQty(delta){
@@ -225,7 +304,7 @@ function sendToCart(){
         unitName: selectedUnit.unitName,
         price: selectedUnit.price,
         qty: qty,   // الكمية الحالية
-        img: data.item.itemImg
+        img: imgSrc
     };
 
     const key = `${payload.itemId}-${payload.unitName}`;
@@ -233,16 +312,20 @@ function sendToCart(){
     // إضافة أو تحديث العنصر في CART
     if(!CART[key]){
         CART[key] = payload;
+        cartEffect();
+
     } else {
         // إذا الصنف موجود مسبقاً، نجمع الكميات
         CART[key].qty += payload.qty;
+        cartEffect();
+
     }
 
     // حفظ السلة
     saveCart();
 
     // الانتقال مباشرة لصفحة الكارت (أو index.html)
-    window.location.href = "cart.html"; // أو "index.html" حسب مسار الكارت
+//    window.location.href = "cart.html"; // أو "index.html" حسب مسار الكارت
 }
 
 function goBack(){
@@ -270,6 +353,25 @@ function sendToCart1(){
   // رجوع مباشر لصفحة الفاتورة
   window.location.href = "index.html";
 
+}
+function goToCart(){
+    // حفظ الكارت في localStorage (موجود أصلاً)
+    saveCart();
+    // الانتقال مباشرة إلى صفحة الكارت
+    window.location.href = "cart.html";
+}
+function markCartChanged() {
+  const badge = document.getElementById("cartBadge");
+  badge.style.display = "block";
+}
+function animateCart() {
+  const btn = document.getElementById("cartBtn");
+  btn.classList.add("cart-animate");
+  setTimeout(() => btn.classList.remove("cart-animate"), 400);
+}
+function cartEffect() {
+  markCartChanged();
+  animateCart();
 }
 
 </script>

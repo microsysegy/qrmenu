@@ -41,7 +41,6 @@ button:hover { background:#ff6f3c; }
   flex-direction: column;
   bottom:0;
   left:0;
-  justify-content:space-around;
   align-items:center;
   width:100%;
   background:#fff;
@@ -53,7 +52,7 @@ button:hover { background:#ff6f3c; }
 }
 
 .bottom-bar button {
-  background:#0de254;
+  background:#0cb344;
   color:#fff;
   border:none;
   border-radius:8px;
@@ -70,11 +69,15 @@ button:hover { background:#ff6f3c; }
   min-width:30px;
   text-align:center;
   }
+#cartContainer {
+  padding-bottom: 90px; /* نفس ارتفاع الـ bottom-bar */
+}
 </style>
 <div class="top-bar" style="align-items: center; justify-content: space-between;" >
-<h2 style="font-size: 14px; padding-right: 10px;">سلة المشتريات</h2>
+    <a style="font-size: 14px; padding-right: 10px; color: #0de254cb;    text-decoration: none;" href="" id="clearCartBtn">تفريغ السلة</a>
+    <h2 style="font-size: 14px; padding-right: 10px;">سلة المشتريات</h2>
     <button onclick="goBack()"> ← </button>
-  </div>
+      </div>
 
 </head>
 <body>
@@ -114,7 +117,7 @@ function renderCart(){
             const found = CACHE.items[catId].find(i=>i.id==c.itemId);
             if(found){ itemData = found; break; }
         }
-        const imgSrc = itemData?.itemImg?.length>50 ? `data:image/jpeg;base64,${itemData.itemImg}` : "noimage.png";
+        const imgSrc = c.img;
 
         const itemTotal = c.qty * c.price;
         total += itemTotal;
@@ -122,7 +125,7 @@ function renderCart(){
         const div = document.createElement("div");
         div.className = "cart-item";
         div.innerHTML = `
-            <img src="${imgSrc}" />
+             <img src="${c.img}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;">
             <div>
                 <strong>${c.itemName} - ${c.unitName}</strong>
                 <div>
@@ -206,7 +209,16 @@ function sendToWhatsApp(){
 renderCart();
 function goBack(){
   window.location.href = "index.html";
+
 }
+document.getElementById("clearCartBtn").addEventListener("click", function (e) {
+  //e.preventDefault(); // يمنع الريفريش
+  CART = {};
+  saveCart();
+  updateCartBadge();   // إخفاء النقطة
+  renderCart();        // لو عندك دالة عرض السلة
+});
+
 </script>
 
 </body>
