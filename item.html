@@ -136,6 +136,47 @@ body {padding-top:55px;  padding-bottom:90px; margin:0; font-family:Tahoma; back
   font-weight:bold;  margin-right: 15px;
   cursor:pointer;
 }
+.add-cart-btn {
+    position: relative;
+    overflow: hidden;   /* مهم عشان الأنيمشن ما يطلعش برا الزر */
+    background: #d62828;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    font-size: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+/* طبقة اللون المتحركة */
+.add-cart-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    z-index: 1;
+}
+
+/* النص فوق الأنيمشن */
+.add-cart-btn span {
+    position: relative;
+    z-index: 2;
+}
+
+/* تشغيل الأنيمشن */
+.add-cart-btn.animate::before {
+    animation: wipeFill 1.0s ease-in-out;
+}
+
+/* الحركة */
+@keyframes wipeFill {
+    0%   { left: -100%; }
+    50%  { left: 0; }
+    100% { left: 100%; }
+
+}
 button { font-size:14px; font-weight:bold; padding:5px 10px; border:none; border-radius:6px; cursor:pointer; background:#d62828; color:#fff; margin:2px; }
 button:hover { background:#ff6f3c; }
 .qty {
@@ -171,7 +212,9 @@ button:hover { background:#ff6f3c; }
   <span id="qty" class="qty">0</span>
   <button onclick="changeQty(1)">+</button>
 
-  <button style="flex:1" onclick="sendToCart()">أضف الي السلة</button>
+  <button class="add-cart-btn" style="flex:1" onclick="animateAdd(this)">
+  <span>  أضف الي السلة </span>
+  </button>
 </div>
 
 
@@ -306,7 +349,6 @@ function sendToCart(){
         alert("اختر الوحدة");
         return;
     }
-
     // تجهيز البيانات
     const payload = {
         itemId: data.item.id,
@@ -323,12 +365,10 @@ function sendToCart(){
     if(!CART[key]){
         CART[key] = payload;
         cartEffect();
-
     } else {
         // إذا الصنف موجود مسبقاً، نجمع الكميات
         CART[key].qty += payload.qty;
         cartEffect();
-
     }
 
     // حفظ السلة
@@ -382,6 +422,14 @@ function animateCart() {
 function cartEffect() {
   markCartChanged();
   animateCart();
+}
+function animateAdd(btn) {
+    btn.classList.remove("animate");
+    void btn.offsetWidth; // restart animation
+    btn.classList.add("animate");
+
+    // هنا تحط كود الإضافة للسلة
+    sendToCart();
 }
 
 </script>

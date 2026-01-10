@@ -518,7 +518,7 @@ function markCartChanged() {
 function loadCartWithTimeout() {
     const cart = JSON.parse(localStorage.getItem("CART") || "{}");
     const lastTime = Number(localStorage.getItem("CART_TIME"));
-    const MAX_TIME = 30 * 60 ; // 30 دقيقة
+    const MAX_TIME = 30 * 60 * 1000; // 30 دقيقة
 
     if (!lastTime || Date.now() - lastTime > MAX_TIME) {
         localStorage.removeItem("CART");
