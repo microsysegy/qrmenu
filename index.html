@@ -182,9 +182,12 @@ const API = "http://192.168.1.2:5000/api";
 let CACHE = null;
 
 // سلة المشتريات
-let CART = JSON.parse(localStorage.getItem("CART") || "{}");
+//let CART = JSON.parse(localStorage.getItem("CART") || "{}");
+let CART = loadCartWithTimeout();
 function saveCart(){
     localStorage.setItem("CART", JSON.stringify(CART));
+    localStorage.setItem("CART_TIME", Date.now()); // وقت آخر استخدام
+
 }
 // ==================== INIT ====================
 document.addEventListener("DOMContentLoaded", async () => {
@@ -491,7 +494,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 window.addEventListener("beforeunload", () => {
-    saveCart();
+  saveCart();
 });
 const categories = document.querySelector('.categories-bar');
 const placeholder = document.getElementById('categories-placeholder');
@@ -512,6 +515,22 @@ function markCartChanged() {
   const badge = document.getElementById("cartBadge");
   badge.style.display = "block";
 }
+function loadCartWithTimeout() {
+    const cart = JSON.parse(localStorage.getItem("CART") || "{}");
+    const lastTime = Number(localStorage.getItem("CART_TIME"));
+    const MAX_TIME = 30 * 60 ; // 30 دقيقة
+
+    if (!lastTime || Date.now() - lastTime > MAX_TIME) {
+        localStorage.removeItem("CART");
+        localStorage.removeItem("CART_TIME");
+        return {};
+    }
+    return cart;
+}
+
+// استخدمها بدل السطر القديم
+
+
 
 </script>
  </body>
