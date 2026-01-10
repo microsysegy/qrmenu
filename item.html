@@ -12,10 +12,11 @@
   75% { transform: translateX(-3px); }
   100% { transform: translateX(0); }
 }
-
+.item-Price{color: #007706;font-size: 20px;}
 .cart-animate {
   animation: shake 0.4s;
 }
+
 
 .badge {
   position: absolute;
@@ -73,9 +74,10 @@ body {padding-top:55px;  padding-bottom:90px; margin:0; font-family:Tahoma; back
 .sizword{font-size: 10px; color: #630404;background-color: #d6adad;border-radius: 30px;padding:3px 7px  ;}
 /* الوحدات */
 .units {
-  display:grid;
+    display:grid;
   gap:12px;
   padding:10px;
+  padding-bottom: 50px;
 }
 
 .units[data-count="1"] { grid-template-columns: 1fr; }
@@ -155,7 +157,10 @@ button:hover { background:#ff6f3c; }
 <button id="cartBtn" onclick="goToCart()">🛒  <span id="cartBadge" class="badge"></span>
 </button>
 <img id="mainImg" class="header-img">
+<div  style="display: flex;align-items: center;padding-left:10px ; justify-content: space-between;">
 <div id="itemName" class="item-name"></div>
+<div id="itemPrice" class="item-Price"></div>
+</div>
 <div id="itemdetails" class="item-details"></div>
 <div id="siz" class="siz">الحجم <spam class="sizword">* اختيار واحد</spam></div>
 
@@ -198,6 +203,7 @@ const imgSrc = data.item.itemImg?.length > 50
 
 document.getElementById("mainImg").src = imgSrc;
 document.getElementById("itemName").textContent = data.item.nameA;
+document.getElementById("itemPrice").textContent =Number( data.units[0].price).toFixed(2) + ' ج';
 document.getElementById("itemdetails").textContent =
     "جوعان؟ " + data.item.nameA + " من افضل الاطعمه التي تنتظرك لتجربها";
 
@@ -225,6 +231,7 @@ if (units.length === 1) {
 
     // تحديث الكمية
     document.getElementById("qty").textContent = qty;
+
 }
 
 // 🟡 أكتر من وحدة
@@ -269,6 +276,8 @@ function selectUnit(unit, el) {
     qty = CART[key]?.qty || 1;
 
     document.getElementById("qty").textContent = qty;
+      // تحديث السعر مع رقم عشري
+    document.getElementById("itemPrice").textContent = Number(unit.price).toFixed(2) + ' ج';
 }
 
 // =======================
@@ -290,6 +299,8 @@ function changeQty(delta){
   qty += delta;
   if(qty < 1) qty = 1;
   document.getElementById("qty").textContent = qty;
+        document.getElementById("itemPrice").textContent =Number( qty * selectedUnit.price).toFixed(2) + ' ج';
+  
 }
 function sendToCart(){
     if(!selectedUnit){
