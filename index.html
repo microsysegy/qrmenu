@@ -497,6 +497,7 @@ const categories = document.querySelector('.categories-bar');
 const placeholder = document.getElementById('categories-placeholder');
 
 const barHeight = categories.offsetHeight;
+let headerHeight = barHeight + 'px';
 
 window.addEventListener('scroll', () => {
   if (window.scrollY >= headerHeight) {
