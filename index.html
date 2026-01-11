@@ -517,17 +517,21 @@ function markCartChanged() {
   badge.style.display = "block";
 }
 function loadCartWithTimeout() {
-    const cart = JSON.parse(localStorage.getItem("CART") || "{}");
-    const lastTime = Number(localStorage.getItem("CART_TIME"));
+    const raw = localStorage.getItem("CART_SESSION");
     const MAX_TIME = 30 * 60 * 1000; // 30 دقيقة
 
-    if (!lastTime || Date.now() - lastTime > MAX_TIME) {
-        localStorage.removeItem("CART");
-        localStorage.removeItem("CART_TIME");
+    if (!raw) return {};
+
+    const data = JSON.parse(raw);
+
+    if (!data.time || Date.now() - data.time > MAX_TIME) {
+        localStorage.removeItem("CART_SESSION");
         return {};
     }
-    return cart;
+
+    return data.cart || {};
 }
+
 
 // استخدمها بدل السطر القديم
 
