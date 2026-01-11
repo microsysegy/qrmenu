@@ -279,15 +279,21 @@ button:hover { background:#ff6f3c; }
   </button>
 </div>
 
+<script src="cart-storage.js"></script>
+<script>
+let CART = loadCartWithTimeout();
+</script>
 
 <script>
 // =======================
 // CART
 // =======================
-let CART = JSON.parse(localStorage.getItem("CART") || "{}");
-
-function saveCart() {
-    localStorage.setItem("CART", JSON.stringify(CART));
+function saveCart(){
+    const data = {
+        cart: CART,
+        time: Date.now()
+    };
+    localStorage.setItem("CART_SESSION", JSON.stringify(data));
 }
 
 // =======================
@@ -467,7 +473,12 @@ const key = `${payload.itemId}-${payload.unitName}-${addonsKey}`;
 }
 
 function goBack(){
-    history.back();
+  window.addEventListener("pageshow", () => {
+    CART = loadCartWithTimeout();
+    if(typeof renderCart === "function") renderCart();
+});
+  
+  history.back();
   }
 function sendToCart1(){
   if(!selectedUnit){

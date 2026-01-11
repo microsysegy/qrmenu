@@ -114,13 +114,19 @@ button:hover { background:#ff6f3c; }
    <!-- <button onclick="window.location.href='index.html'">العودة للمنيو</button>-->
 
 </div>
+<script src="cart-storage.js"></script>
+<script>
+let CART = loadCartWithTimeout();
+</script>
 
 <script>
-let CART = JSON.parse(localStorage.getItem("CART") || "{}");
 let CACHE = JSON.parse(localStorage.getItem("OFFLINE_MENU") || "{}"); 
-
 function saveCart(){
-    localStorage.setItem("CART", JSON.stringify(CART));
+    const data = {
+        cart: CART,
+        time: Date.now()
+    };
+    localStorage.setItem("CART_SESSION", JSON.stringify(data));
 }
 function renderCart(){
     const container = document.getElementById("cartContainer");
@@ -270,12 +276,16 @@ function sendToWhatsApp(){
 // عرض الفاتورة عند تحميل الصفحة
 renderCart();
 function goBack(){
-      
-        history.back();
+    window.addEventListener("pageshow", () => {
+    CART = loadCartWithTimeout();
+    if(typeof renderCart === "function") renderCart();
+});
+  
+    history.back();
     }
 document.getElementById("clearCartBtn").addEventListener("click", function (e) {
+  
   //e.preventDefault(); // يمنع الريفريش
-  CART = {};
   saveCart();
   //updateCartBadge();   // إخفاء النقطة
   renderCart();        // لو عندك دالة عرض السلة
