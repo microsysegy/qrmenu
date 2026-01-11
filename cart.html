@@ -26,6 +26,30 @@ body { font-family:Tahoma, sans-serif; background:#f5f5f5; color:#222; margin:0;
   z-index:2000;
 }
 h2 { text-align:center; margin-bottom:20px; }
+.cart-addons {
+    margin-top: 6px;
+    padding-right: 8px;
+    font-size: 13px;
+}
+
+.addon-line {
+    display: flex;
+    justify-content: space-between;
+    color: #2e7d32;
+}
+
+.cart-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-weight: bold;
+}
+
+.cart-controls {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
 
 .cart-item { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background:#fff; padding:10px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.1); }
 .cart-item img { width:80px; height:80px; object-fit:cover; border-radius:8px; margin-left:10px; }
@@ -112,52 +136,68 @@ function renderCart(){
     let total = 0;
 
     Object.values(CART).forEach((c, index)=>{
-        let itemData = null;
-        for(let catId in CACHE.items){
-            const found = CACHE.items[catId].find(i=>i.id==c.itemId);
-            if(found){ itemData = found; break; }
-        }
-        const imgSrc = c.img;
 
-        const itemTotal = c.qty * c.price;
+        // 🔹 سعر الوحدة + الإضافات
+        const unitFinalPrice =
+            Number(c.price) + Number(c.addonsTotal || 0);
+
+        const itemTotal = unitFinalPrice * c.qty;
         total += itemTotal;
-        // إنشاء العنصر ديناميكي
+
+        // 🔹 تجهيز HTML الإضافات
+        let addonsHTML = "";
+        if (c.addons && c.addons.length > 0) {
+            addonsHTML = `<div class="cart-addons">`;
+            c.addons.forEach(a => {
+                addonsHTML += `
+                    <div class="addon-line">
+                        + ${a.name}
+                        <span>${Number(a.price).toFixed(2)} ج</span>
+                    </div>
+                `;
+            });
+            addonsHTML += `</div>`;
+        }
+
         const div = document.createElement("div");
         div.className = "cart-item";
         div.innerHTML = `
-             <img src="${c.img}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;">
-            <div>
+            <img src="${c.img}"
+                 style="width:60px;height:60px;object-fit:cover;border-radius:8px;">
+
+            <div class="cart-info">
                 <strong>${c.itemName} - ${c.unitName}</strong>
-                <div>
-                    <span id="qty-${index}">${c.qty}</span>
+
+                ${addonsHTML}
+
+                <div class="cart-bottom">
+                    <span>× ${c.qty}</span>
+                    <span>${itemTotal.toFixed(2)} جنيه</span>
                 </div>
-                <div>${itemTotal} جنيه</div>
             </div>
         `;
-        // أزرار التحكم
+
+        // 🔹 أزرار التحكم
         const controls = document.createElement("div");
+        controls.className = "cart-controls";
+
         const btnMinus = document.createElement("button");
         btnMinus.textContent = "-";
-        btnMinus.addEventListener("click", ()=> updateQty(c.itemId, c.unitName, -1));
+        btnMinus.onclick = () => updateQty(c.itemId, c.unitName, -1);
 
         const btnPlus = document.createElement("button");
         btnPlus.textContent = "+";
-        btnPlus.addEventListener("click", ()=> updateQty(c.itemId, c.unitName, 1));
-
-       // const btnRemove = document.createElement("button");
-       // btnRemove.textContent = "حذف";
-       // btnRemove.addEventListener("click", ()=> removeItem(c.itemId, c.unitName));
+        btnPlus.onclick = () => updateQty(c.itemId, c.unitName, 1);
 
         controls.appendChild(btnMinus);
         controls.appendChild(btnPlus);
-        //controls.appendChild(btnRemove);
 
-        div.querySelector("div").appendChild(controls);
-
+        div.querySelector(".cart-info").appendChild(controls);
         container.appendChild(div);
     });
 
-    document.getElementById("total").textContent = "الإجمالي: " + total + " جنيه";
+    document.getElementById("total").textContent =
+        "الإجمالي: " + total.toFixed(2) + " جنيه";
 }
 
 function updateQty(itemId, unitName, delta){

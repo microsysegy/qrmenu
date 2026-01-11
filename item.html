@@ -12,8 +12,7 @@
     gap: 18px;
     margin-top: 30px;
     padding-bottom: 70px;
-
-  }
+}
 
 .addon-card {
     position: relative;
@@ -313,7 +312,9 @@ document.getElementById("itemdetails").textContent =
 // STATE
 // =======================
 let selectedUnit = null;
+let basePrice = 0;         // سعر الوحدة
 let qty = 1;
+
 
 const units = data.units || [];
 const unitsBox = document.getElementById("unitsBox");
@@ -344,6 +345,7 @@ const ADDONS = [
 // 🟢 حالة وحدة واحدة فقط
 if (units.length === 1) {
     selectedUnit = units[0];
+
     qty = 1;
 
     // إخفاء الوحدات
@@ -392,6 +394,7 @@ function selectUnit(unit, el) {
 
     el.classList.add("selected");
     selectedUnit = unit;
+    basePrice = Number(unit.price);
 
     const key = `${data.item.id}-${unit.unitName}`;
     qty = CART[key]?.qty || 1;
@@ -399,7 +402,9 @@ function selectUnit(unit, el) {
     document.getElementById("qty").textContent = qty;
       // تحديث السعر مع رقم عشري
     document.getElementById("itemPrice").textContent = Number(unit.price).toFixed(2) + ' ج';
-}
+    updateItemPrice();
+
+  }
 
 // =======================
 // AUTO SELECT FIRST UNIT
@@ -410,6 +415,8 @@ function selectFirstUnit() {
 
     first.classList.add("selected");
     selectedUnit = units[0];
+        basePrice = Number(units[0].price);
+
     qty = 1;
 
     document.getElementById("qty").textContent = qty;
@@ -418,23 +425,28 @@ function selectFirstUnit() {
 function changeQty(delta){
   if(!selectedUnit) return alert("اختر الوحدة أولاً");
   qty += delta;
+      updateItemPrice();
   if(qty < 1) qty = 1;
   document.getElementById("qty").textContent = qty;
         document.getElementById("itemPrice").textContent =Number( qty * selectedUnit.price).toFixed(2) + ' ج';
-  
+      updateItemPrice();
+
 }
 function sendToCart(){
     if(!selectedUnit){
         alert("اختر الوحدة");
         return;
     }
-    // تجهيز البيانات
+        const addonsTotal = getAddonsTotal();
+// تجهيز البيانات
     const payload = {
         itemId: data.item.id,
         itemName: data.item.nameA,
         unitName: selectedUnit.unitName,
         price: selectedUnit.price,
         qty: qty,   // الكمية الحالية
+        addons: SELECTED_ADDONS,
+        addonsTotal: addonsTotal,
         img: imgSrc
     };
 
@@ -542,16 +554,30 @@ function renderAddons(categoryId) {
 
 let SELECTED_ADDONS = [];
 
-function toggleAddon(addon, el) {
-    const idx = SELECTED_ADDONS.findIndex(a => a.id === addon.id);
+function getAddonsTotal() {
+    return SELECTED_ADDONS.reduce((sum, a) => sum + Number(a.price), 0);
+}
+function updateItemPrice() {
+    const addonsTotal = getAddonsTotal();
+    const finalPrice = (basePrice + addonsTotal) * qty;
 
-    if (idx >= 0) {
-        SELECTED_ADDONS.splice(idx, 1);
+    document.getElementById("itemPrice").textContent =
+        finalPrice.toFixed(2) + " ج";
+}
+function toggleAddon(addon, el) {
+    const exists = SELECTED_ADDONS.find(a => a.id === addon.id);
+
+    if (exists) {
+        // إزالة
+        SELECTED_ADDONS = SELECTED_ADDONS.filter(a => a.id !== addon.id);
         el.classList.remove("selected");
     } else {
+        // إضافة
         SELECTED_ADDONS.push(addon);
         el.classList.add("selected");
     }
+
+    updateItemPrice(); // 🔥 تجميع مباشر
 }
 
 </script>
