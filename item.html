@@ -10,7 +10,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 18px;
-    margin-top: 30px;
+    margin-top: 10px;
     padding-bottom: 70px;
 
 }
@@ -18,9 +18,9 @@
 .addon-card {
   color: white;
     position: relative;
-    background: #630404;
+    background: #d62828;
     border-radius: 18px;
-    padding-top: 45px;
+    padding-top: 35px;
     box-shadow: 0 10px 22px rgba(0,0,0,.15);
     overflow: visible;
     cursor: pointer;
@@ -262,10 +262,10 @@ button:hover { background:#ff6f3c; }
 <div id="itemPrice" class="item-Price"></div>
 </div>
 <div id="itemdetails" class="item-details"></div>
-<div id="siz" class="siz">الحجم <spam class="sizword">* اختيار واحد</spam></div>
+<div id="siz" class="siz">الحجم <span class="sizword">* اختيار واحد</span></div>
 
 <div id="unitsBox" class="units"></div>
-<h3 class="addspan" style="margin-top:20px">إضافات</h3><br><br>
+<h3 id="addspan" class="addspan" style="margin-top:20px">إضافات</h3><br><br>
 <div id="addonsBox" class="addons-grid"></div>
 
 <!-- شريط التحكم السفلي -->
@@ -364,7 +364,6 @@ else if (units.length > 1) {
     selectFirstUnit();
     renderAddons(1);
 }
-
 // =======================
 // RENDER UNITS
 // =======================
@@ -447,8 +446,9 @@ function sendToCart(){
     };
 
     const addonsKey = addonsSignature(payload.addons);
-    const key = `${payload.itemId}-${payload.unitName}-${addonsKey}`;
-
+payload.addonsKey = addonsKey; // حفظ المفتاح داخل العنصر نفسه
+const key = `${payload.itemId}-${payload.unitName}-${addonsKey}`;
+//CART[key] = CART[key] ? {...payload, qty: CART[key].qty + payload.qty} : payload;
     // إضافة أو تحديث العنصر في CART
     if(!CART[key]){
         CART[key] = payload;

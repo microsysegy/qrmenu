@@ -122,7 +122,6 @@ let CACHE = JSON.parse(localStorage.getItem("OFFLINE_MENU") || "{}");
 function saveCart(){
     localStorage.setItem("CART", JSON.stringify(CART));
 }
-
 function renderCart(){
     const container = document.getElementById("cartContainer");
     container.innerHTML = "";
@@ -135,44 +134,43 @@ function renderCart(){
 
     let total = 0;
 
-    Object.values(CART).forEach((c, index)=>{
+    // استخدام Object.keys لتخزين المفتاح مباشرة
+    Object.keys(CART).forEach(key => {
+        const c = CART[key];
 
-        // 🔹 سعر الوحدة + الإضافات
-        const unitFinalPrice =
-            Number(c.price) + Number(c.addonsTotal || 0);
-
-        const itemTotal = unitFinalPrice * c.qty;
-        total += itemTotal;
-
-        // 🔹 تجهيز HTML الإضافات
+        // 🔹 حساب مجموع الإضافات
+        let addonsTotal = 0;
         let addonsHTML = "";
-        if (c.addons && c.addons.length > 0) {
+        if(c.addons && c.addons.length > 0){
             addonsHTML = `<div class="cart-addons">`;
             c.addons.forEach(a => {
+                addonsTotal += Number(a.price || 0);
                 addonsHTML += `
                     <div class="addon-line">
-                        + ${a.name}
-                        <span>${Number(a.price).toFixed(2)} ج</span>
+                        + ${a.name} <span>${Number(a.price).toFixed(2)} ج</span>
                     </div>
                 `;
             });
             addonsHTML += `</div>`;
         }
 
+        // 🔹 سعر الوحدة + الإضافات × الكمية
+        const unitFinalPrice = Number(c.price) + addonsTotal;
+        const itemTotal = unitFinalPrice * c.qty;
+        total += itemTotal;
+
+        // 🔹 إنشاء العنصر HTML للصنف
         const div = document.createElement("div");
         div.className = "cart-item";
         div.innerHTML = `
-            <img src="${c.img}"
-                 style="width:60px;height:60px;object-fit:cover;border-radius:8px;">
+            <img src="${c.img}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;">
 
             <div class="cart-info">
                 <strong>${c.itemName} - ${c.unitName}</strong>
-
                 ${addonsHTML}
-
                 <div class="cart-bottom">
-                    <span>× ${c.qty}</span>
-                    <span>${itemTotal.toFixed(2)} ج</span>
+                    <span id="itemQty-${key}">× ${c.qty}</span>
+                    <span id="itemPrice-${key}">${itemTotal.toFixed(2)} ج</span>
                 </div>
             </div>
         `;
@@ -183,11 +181,11 @@ function renderCart(){
 
         const btnMinus = document.createElement("button");
         btnMinus.textContent = "-";
-        btnMinus.onclick = () => updateQty(c.itemId, c.unitName, -1);
+        btnMinus.onclick = () => updateQty(key, -1);
 
         const btnPlus = document.createElement("button");
         btnPlus.textContent = "+";
-        btnPlus.onclick = () => updateQty(c.itemId, c.unitName, 1);
+        btnPlus.onclick = () => updateQty(key, 1);
 
         controls.appendChild(btnMinus);
         controls.appendChild(btnPlus);
@@ -196,15 +194,17 @@ function renderCart(){
         container.appendChild(div);
     });
 
-    document.getElementById("total").textContent =
-        "الإجمالي: " + total.toFixed(2) + " جنيه";
+    // 🔹 تحديث الإجمالي النهائي
+    document.getElementById("total").textContent = "الإجمالي: " + total.toFixed(2) + " جنيه";
 }
 
-function updateQty(itemId, unitName, delta){
-    const key = `${itemId}-${unitName}`;
+
+function updateQty(key, delta){
     if(!CART[key]) return;
+
     CART[key].qty += delta;
     if(CART[key].qty <= 0) delete CART[key];
+
     saveCart();
     renderCart();
 }
