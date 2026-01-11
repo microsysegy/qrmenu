@@ -179,7 +179,6 @@ body { margin:0; font-family:Tahoma, sans-serif; background:#f5f5f5; color:#222;
 <script src="cart-storage.js"></script>
 <script>
 let CART = loadCart(); // ✅ بدون timeout
-
 </script>
 
 <script>
@@ -307,158 +306,12 @@ function showUnits(itemId, itemName){
     document.getElementById("detailsPopup").style.display = "flex";
 }
 
-// تغيير الكمية داخل الوحدة مباشرة
-function changeUnitQty(itemId, itemName, unitName, price, delta){
-    const key = `${itemId}-${unitName}`;
-    if(!CART[key]) CART[key] = {itemId, itemName, unitName, price, qty:0};
-
-    CART[key].qty += delta;
-
-    if(CART[key].qty <= 0){
-        delete CART[key];
-        document.getElementById(`unit-qty-${itemId}-${unitName}`).textContent = 0;
-    } else {
-        document.getElementById(`unit-qty-${itemId}-${unitName}`).textContent = CART[key].qty;
-    }
-
-    saveCart(); // ✅ مهم
-}
-
-//            <button onclick="changeQty(${itemId}, '${u.unitName}', -1)">  -  </button>
-//            <span id="qty-${itemId}-${u.unitName}">0</span>
-//            <button onclick="changeQty(${itemId}, '${u.unitName}', 1)">  +  </button>
-//            <button onclick="addToCart(${itemId}, '${u.unitName}', ${u.price})">   إضافة   </button>
-
-
-// ==================== CART ====================
-function closePopup(){ document.getElementById("detailsPopup").style.display="none"; }
 function manualRefresh(){ loadOnline().then(ok=>{if(!ok) alert("لا يوجد اتصال بالسيرفر");}); }
 function goToCart(){
     // حفظ الكارت في localStorage (موجود أصلاً)
     saveCart();
     // الانتقال مباشرة إلى صفحة الكارت
     window.location.href = "cart.html";
-}
-
-function changeQty(itemId, unitName, delta){
-    const key = `${itemId}-${unitName}`;
-    let val = CART[key]?.qty || 0;
-    val += delta;
-    if(val<0) val=0;
-    document.getElementById(`qty-${itemId}-${unitName}`).textContent = val;
-    if(val===0) delete CART[key];
-    else CART[key] = {...CART[key], qty:val};
-}
-
-function addToCart(itemId, itemName, unitName, price){
-    const key = `${itemId}-${unitName}`;
-    CART[key] = {
-        itemId,
-        itemName,
-        unitName,
-        price,
-        qty: (CART[key]?.qty || 0) + 1
-    };
-
-    // ✅ احفظ العربة فورًا
-    localStorage.setItem("CART", JSON.stringify(CART));
-
-    // ✅ حدّث الواجهة فقط لو العنصر موجود
-    const qtyEl = document.getElementById(`qty-${itemId}-${unitName}`);
-    if (qtyEl) {
-        qtyEl.textContent = CART[key].qty;
-    }
-}
-
-function openCart(){
-    const container = document.getElementById("cartItems");
-    container.innerHTML = "";
-    let total = 0;
-
-    Object.values(CART).forEach(c=>{
-        const itemTotal = c.price * c.qty;
-        total += itemTotal;
-
-        container.innerHTML += `
-        <div class="cart-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:5px; border-bottom:1px solid #ccc;">
-            <div style="flex:1;">
-                <strong>${c.itemName} - ${c.unitName}</strong>
-                <div style="display:flex; align-items:center; gap:5px; margin-top:3px;">
-                    <button onclick="updateQty('${c.itemId}','${c.unitName}',-1)">-</button>
-                    <span id="cart-qty-${c.itemId}-${c.unitName}">${c.qty}</span>
-                    <button onclick="updateQty('${c.itemId}','${c.unitName}',1)">+</button>
-                </div>
-            </div>
-            <div style="text-align:right;">
-                <span>${itemTotal} جنيه</span><br>
-                <button onclick="removeFromCart('${c.itemId}','${c.unitName}')" style="margin-top:3px;">حذف</button>
-            </div>
-        </div>`;
-    });
-
-    container.innerHTML += `
-        <hr>
-        <div style="display:flex; justify-content:space-between; font-weight:bold; margin-top:5px;">
-            <span>الإجمالي الكلي:</span>
-            <span id="cart-total">${total} جنيه</span>
-        </div>`;
-
-    document.getElementById("cartPopup").style.display = "flex";
-}
-
-// زيادة أو نقص الكمية
-function updateQty(itemId, unitName, delta){
-    const key = `${itemId}-${unitName}`;
-    if(!CART[key]) return;
-
-    CART[key].qty += delta;
-    if(CART[key].qty <= 0){
-        delete CART[key];
-    }
-
-    saveCart(); // ✅
-    openCart();
-}
-
-// حذف الصنف مباشرة
-function removeFromCart(itemId, unitName){
-    const key = `${itemId}-${unitName}`;
-    delete CART[key];
-    saveCart();
-    openCart();
-}
-
-// زر إغلاق الكارت
-function closeCart(){
-    document.getElementById("cartPopup").style.display="none";}
-
-
-
-
-function sendToWhatsApp(){
-if (Object.keys(CART).length === 0) {
-    alert("السلة فارغة");
-    return;
-}
-
-
-    let total = 0;
-    let msg = "🧾 طلب جديد:\n\n";
-
-    Object.values(CART).forEach(c => {
-        const lineTotal = c.price * c.qty;
-        total += lineTotal;
-
-        msg += `• ${c.itemName}\n`;
-        msg += `  - ${c.unitName} × ${c.qty} = ${lineTotal} جنيه\n\n`;
-    });
-
-    msg += `🔻 الإجمالي: ${total} جنيه`;
-
-    const phone = "+201001741790"; // رقم الواتس
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-
-    window.open(url, "_blank");
 }
 
 function exportToJSON() {
