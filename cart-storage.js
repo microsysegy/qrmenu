@@ -1,32 +1,27 @@
 const CART_KEY = "CART_SESSION";
-const CART_TIMEOUT = 1000 * 60 * 60 * 2; // ساعتين
 
-function loadCartWithTimeout(){
+// تحميل الكارت
+function loadCart(){
     const raw = localStorage.getItem(CART_KEY);
     if(!raw) return {};
 
-    const data = JSON.parse(raw);
-
-    if(!data.time || !data.cart) return {};
-
-        console.log( CART_TIMEOUT)
-    if(Date.now() - data.time > CART_TIMEOUT){
-        //localStorage.removeItem(CART_KEY);
+    try {
+        const data = JSON.parse(raw);
+        return data.cart || {};
+    } catch(e){
         return {};
     }
-
-    return data.cart;
 }
 
+// حفظ الكارت
 function saveCart(){
     localStorage.setItem(CART_KEY, JSON.stringify({
-        cart: CART,
-        time: Date.now()
+        cart: CART
     }));
 }
 
+// مسح الكارت (يدوي فقط)
 function clearCart(){
-    localStorage.removeItem(CART_KEY);
     CART = {};
+    localStorage.removeItem(CART_KEY);
 }
-

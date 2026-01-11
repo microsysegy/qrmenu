@@ -116,7 +116,8 @@ button:hover { background:#ff6f3c; }
 </div>
 <script src="cart-storage.js"></script>
 <script>
-let CART = loadCartWithTimeout();
+let CART = loadCart(); // ✅ بدون timeout
+
 </script>
 
 <script>
@@ -222,11 +223,15 @@ function removeItem(itemId, unitName){
     renderCart();
 }
 
-function clearCart(){
+document.getElementById("clearCartBtn").addEventListener("click", function (e) {
+    e.preventDefault();
+
     CART = {};
-    saveCart();
+    localStorage.removeItem("CART_SESSION");
+
     renderCart();
-}
+    updateCartBadge?.();
+});
 function sendToWhatsApp(){
     if(Object.keys(CART).length===0){
         alert("السلة فارغة");
@@ -277,19 +282,20 @@ function sendToWhatsApp(){
 renderCart();
 function goBack(){
     window.addEventListener("pageshow", () => {
-    CART = loadCartWithTimeout();
+    let CART = loadCart(); // ✅ بدون timeout
     if(typeof renderCart === "function") renderCart();
 });
   
     history.back();
     }
 document.getElementById("clearCartBtn").addEventListener("click", function (e) {
-  
-  //e.preventDefault(); // يمنع الريفريش
-  saveCart();
-  //updateCartBadge();   // إخفاء النقطة
-  renderCart();        // لو عندك دالة عرض السلة
+    e.preventDefault();
+
+    clearCart();        // ✅ يمسح الكارت فعليًا
+    renderCart();       // تحديث العرض
+    
 });
+
 
 </script>
 

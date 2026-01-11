@@ -281,7 +281,8 @@ button:hover { background:#ff6f3c; }
 
 <script src="cart-storage.js"></script>
 <script>
-let CART = loadCartWithTimeout();
+let CART = loadCart(); // ✅ بدون timeout
+
 </script>
 
 <script>
@@ -474,7 +475,8 @@ const key = `${payload.itemId}-${payload.unitName}-${addonsKey}`;
 
 function goBack(){
   window.addEventListener("pageshow", () => {
-    CART = loadCartWithTimeout();
+    let CART = loadCart(); // ✅ بدون timeout
+
     if(typeof renderCart === "function") renderCart();
 });
   

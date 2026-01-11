@@ -178,7 +178,8 @@ body { margin:0; font-family:Tahoma, sans-serif; background:#f5f5f5; color:#222;
 
 <script src="cart-storage.js"></script>
 <script>
-let CART = loadCartWithTimeout();
+let CART = loadCart(); // ✅ بدون timeout
+
 </script>
 
 <script>
