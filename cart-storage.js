@@ -9,8 +9,9 @@ function loadCartWithTimeout(){
 
     if(!data.time || !data.cart) return {};
 
+        console.log( CART_TIMEOUT)
     if(Date.now() - data.time > CART_TIMEOUT){
-        localStorage.removeItem(CART_KEY);
+        //localStorage.removeItem(CART_KEY);
         return {};
     }
 
