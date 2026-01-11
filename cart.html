@@ -172,7 +172,7 @@ function renderCart(){
 
                 <div class="cart-bottom">
                     <span>× ${c.qty}</span>
-                    <span>${itemTotal.toFixed(2)} جنيه</span>
+                    <span>${itemTotal.toFixed(2)} ج</span>
                 </div>
             </div>
         `;
@@ -221,25 +221,47 @@ function clearCart(){
     saveCart();
     renderCart();
 }
-
 function sendToWhatsApp(){
     if(Object.keys(CART).length===0){
         alert("السلة فارغة");
         return;
     }
 
-    let msg = "🧾 طلب جديد:\n\n";
+    let msg = "🧾 طلب جديد:\n";
     let total = 0;
 
-    Object.values(CART).forEach(c=>{
-        const itemData = (()=>{for(let catId in CACHE.items){ const f = CACHE.items[catId].find(i=>i.id==c.itemId); if(f) return f; } return null;})();
-        const lineTotal = c.qty * c.price;
+    Object.values(CART).forEach(c => {
+        // البحث عن بيانات الصنف من CACHE
+        const itemData = (() => {
+            for (let catId in CACHE.items) {
+                const f = CACHE.items[catId].find(i => i.id == c.itemId);
+                if (f) return f;
+            }
+            return null;
+        })();
+
+        // حساب الإضافات
+        let addonsTotal = 0;
+        let addonsMsg = "";
+        if(c.addons && c.addons.length > 0){
+            c.addons.forEach(a => {
+                addonsTotal += Number(a.price);
+                addonsMsg += `  + ${a.name} = ${a.price} ج\n`;
+            });
+        }
+
+        // حساب مجموع السطر
+        const lineTotal = (Number(c.price) + addonsTotal) * c.qty;
         total += lineTotal;
-        const imgLink = itemData?.itemImg?.length>50 ? "[صورة مرفقة]" : "";
-        msg += `• ${c.itemName}\n  - ${c.unitName} × ${c.qty} = ${lineTotal} جنيه ${imgLink}\n\n`;
+
+        // رسالة الصنف
+        msg += `\n• ${c.itemName} \n - ${c.unitName} × ${c.qty} = ${lineTotal} ج \n`;
+        if(addonsMsg) msg += addonsMsg ;
     });
 
-    msg += `🔻 الإجمالي: ${total} جنيه`;
+    msg += `\n 🔻 الإجمالي: ${total} جنيه`;
+
+    // فتح WhatsApp
     const phone = "+201001741790"; 
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     window.open(url, "_blank");

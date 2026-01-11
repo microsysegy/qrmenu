@@ -12,11 +12,13 @@
     gap: 18px;
     margin-top: 30px;
     padding-bottom: 70px;
+
 }
 
 .addon-card {
+  color: white;
     position: relative;
-    background: #fff;
+    background: #630404;
     border-radius: 18px;
     padding-top: 45px;
     box-shadow: 0 10px 22px rgba(0,0,0,.15);
@@ -26,7 +28,7 @@
 }
 
 .addon-card.selected {
-    outline: 2px solid #d62828;
+    outline: 5px solid #007706;
 }
 
 .addon-img {
@@ -329,14 +331,14 @@ const ADDONS = [
   {
     id: 1,
     categoryIds: [1],
-    name: "جبنة زيادة",
+    name: "شرائح الطماطم",
     price: 5,
     img: "tomatos.png"
   },  
   {
     id: 2,
     categoryIds: [1, 2],
-    name: "صوص باربكيو",
+    name: "شرائح الخيار",
     price: 3,
     img: "qer.png"
   }
@@ -396,12 +398,6 @@ function selectUnit(unit, el) {
     selectedUnit = unit;
     basePrice = Number(unit.price);
 
-    const key = `${data.item.id}-${unit.unitName}`;
-    qty = CART[key]?.qty || 1;
-
-    document.getElementById("qty").textContent = qty;
-      // تحديث السعر مع رقم عشري
-    document.getElementById("itemPrice").textContent = Number(unit.price).toFixed(2) + ' ج';
     updateItemPrice();
 
   }
@@ -429,7 +425,7 @@ function changeQty(delta){
   if(qty < 1) qty = 1;
   document.getElementById("qty").textContent = qty;
         document.getElementById("itemPrice").textContent =Number( qty * selectedUnit.price).toFixed(2) + ' ج';
-      updateItemPrice();
+     updateItemPrice();
 
 }
 function sendToCart(){
@@ -450,7 +446,8 @@ function sendToCart(){
         img: imgSrc
     };
 
-    const key = `${payload.itemId}-${payload.unitName}`;
+    const addonsKey = addonsSignature(payload.addons);
+    const key = `${payload.itemId}-${payload.unitName}-${addonsKey}`;
 
     // إضافة أو تحديث العنصر في CART
     if(!CART[key]){
@@ -470,8 +467,8 @@ function sendToCart(){
 }
 
 function goBack(){
-       history.back();
-    }
+    history.back();
+  }
 function sendToCart1(){
   if(!selectedUnit){
     alert("اختر الوحدة");
@@ -557,13 +554,17 @@ let SELECTED_ADDONS = [];
 function getAddonsTotal() {
     return SELECTED_ADDONS.reduce((sum, a) => sum + Number(a.price), 0);
 }
-function updateItemPrice() {
+function updateItemPrice(){
+    if(!selectedUnit) return;
+
     const addonsTotal = getAddonsTotal();
-    const finalPrice = (basePrice + addonsTotal) * qty;
+    const finalPrice =(
+        Number(selectedUnit.price) + Number(addonsTotal)) * qty;
 
     document.getElementById("itemPrice").textContent =
         finalPrice.toFixed(2) + " ج";
 }
+
 function toggleAddon(addon, el) {
     const exists = SELECTED_ADDONS.find(a => a.id === addon.id);
 
@@ -579,7 +580,14 @@ function toggleAddon(addon, el) {
 
     updateItemPrice(); // 🔥 تجميع مباشر
 }
+function addonsSignature(addons){
+    if(!addons || addons.length === 0) return "noaddons";
 
+    return addons
+        .map(a => a.id) // أو الاسم لو مفيش id
+        .sort()
+        .join("_");
+}
 </script>
 
 
