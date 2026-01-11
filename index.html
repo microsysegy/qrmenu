@@ -516,22 +516,6 @@ function markCartChanged() {
   const badge = document.getElementById("cartBadge");
   badge.style.display = "block";
 }
-function loadCartWithTimeout() {
-    const raw = localStorage.getItem("CART_SESSION");
-    const MAX_TIME = 30 * 60 * 1000; // 30 دقيقة
-
-    if (!raw) return {};
-
-    const data = JSON.parse(raw);
-
-    if (!data.time || Date.now() - data.time > MAX_TIME) {
-        localStorage.removeItem("CART_SESSION");
-        return {};
-    }
-
-    return data.cart || {};
-}
-
 
 // استخدمها بدل السطر القديم
 
